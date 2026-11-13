@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050608">
+<meta name="description" content="An interactive field of luminous blue filaments.">
+<title>Synthetic Dream N° 2.0 — pink current blue gold</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#050608;color:#deedf5;--line:#233540;--muted:#a1b5c0;--accent:#77d8ff}
+*{box-sizing:border-box}body{margin:0;overflow:hidden}canvas{position:fixed;inset:0;width:100%;height:100%;touch-action:none}header{position:fixed;top:max(22px,env(safe-area-inset-top));left:clamp(18px,4vw,54px);pointer-events:none}h1{font-size:clamp(20px,3vw,32px);font-weight:400;letter-spacing:-.045em;margin:0}header p{margin:6px 0 0;color:var(--muted);font-size:11px;letter-spacing:.22em;text-transform:uppercase}body.clean header,body.clean .dock{display:none}
+.dock{
+  position:fixed;
+  left:max(10px,env(safe-area-inset-left));
+  bottom:max(10px,env(safe-area-inset-bottom));
+  width:min(190px,calc(100vw - 20px));
+  max-height:calc(100dvh - 90px);
+  padding:0 8px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  pointer-events:none;
+}
+nav,.panel,.status{pointer-events:auto}
+nav{order:2;display:grid;grid-template-columns:repeat(4,34px);gap:6px;flex:none}
+.panel{order:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.panel[hidden],.status:empty{display:none}
+button{
+  width:34px;height:34px;padding:0;border-radius:50%;
+  border:1px solid #ffffff38;background:#ffffff0a;color:#ffffffeb;
+  display:grid;place-items:center;font:inherit;font-size:0;cursor:pointer;
+  backdrop-filter:blur(6px);
+}
+button::before{content:attr(data-icon);font-size:15px;line-height:1}
+#png::before{font-size:8px}
+#pause[aria-pressed=true]::before{content:"▶"}
+button:hover,button[aria-expanded=true],button[aria-pressed=true]{background:#ffffff26}
+button:active{transform:scale(.96)}
+button:disabled{opacity:.55;cursor:wait}
+button:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sliders{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;margin-bottom:7px}
+.sliders label{display:grid;grid-template-columns:1fr auto;align-items:start;gap:2px;font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:#ffffffcf}
+.sliders input{grid-column:1 / -1;margin:0;min-width:0}
+.sliders input[type="range"]{width:100%;height:16px;appearance:none;background:transparent;cursor:pointer}
+.sliders input[type="range"]::-webkit-slider-runnable-track{height:1px;border-radius:999px;background:#ffffff80}
+.sliders input[type="range"]::-moz-range-track{height:1px;border-radius:999px;background:#ffffff80}
+.sliders input[type="range"]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;border:1px solid #ffffffbf;border-radius:50%;background:#ffffffeb;margin-top:-5.5px}
+.sliders input[type="range"]::-moz-range-thumb{width:10px;height:10px;border:1px solid #ffffffbf;border-radius:50%;background:#ffffffeb}
+.sliders input[type="checkbox"]{width:13px;height:13px;accent-color:#eee}
+output{color:#ffffff99;font-variant-numeric:tabular-nums}
+.status{order:0;margin:0;font-size:10px;color:#fff}
+.audio-panel{grid-template-columns:minmax(0,1fr);margin-bottom:0;order:1;pointer-events:auto;display:grid;gap:7px;padding:7px 0 3px;border-top:1px solid #ffffff24;color:#ffffffcf;font-size:8px;letter-spacing:.06em;text-transform:uppercase}
+.audio-panel[hidden],.audio-panel [hidden]{display:none}
+.audio-panel label{grid-template-columns:minmax(0,1fr);gap:3px}
+.audio-panel p{margin:0;color:#ffffff99;line-height:1.4;text-transform:none}
+.audio-panel select,.audio-panel button{width:100%;height:auto;min-width:0;border:1px solid #ffffff30;border-radius:4px;font:inherit;letter-spacing:inherit;text-transform:inherit;padding:5px;color:inherit;background:#ffffff08}
+.audio-panel select option{background:#101820;color:#fff}
+.audio-panel button:hover{background:#ffffff26}
+.audio-panel meter{appearance:none;width:100%;height:3px;background:#ffffff30;border:0;border-radius:999px;overflow:hidden}
+.audio-panel meter::-webkit-meter-bar{height:3px;background:#ffffff30;border:0}
+.audio-panel meter::-webkit-meter-optimum-value{background:#b1e8ff}
+.audio-panel meter::-moz-meter-bar{background:#b1e8ff}
+</style>
+</head>
+<body>
+<canvas id="field" tabindex="0" aria-label="Animated pink filaments with gold highlights and a blue center. Move the pointer or drag to bend them. Press H for clean view."></canvas>
+<header><h1>Synthetic Dream N° 2.0</h1><p>pink current blue gold</p></header>
+<div class="dock">
+<p class="status" role="status"></p>
+<section class="panel" id="panel" hidden aria-label="Filament settings">
+<div class="sliders">
+<label><span>Symmetry On / Off</span><output></output><input id="symmetry" type="range" min="0" max="1" step="1" value="1" data-unit=""></label>
+<label><span>Symmetry Center</span><output></output><input id="symmetryCenter" type="range" min="-100" max="200" value="50" step="1" data-unit="%"></label>
+<label><span>Inner Orange Glow</span><output></output><input id="innerGlow" type="range" min="0" max="400" value="0" step="1" data-unit="%"></label>
+<label><span>Glow Size</span><output></output><input id="glowSize" type="range" min="5" max="600" value="100" step="1" data-unit="%"></label>
+<label><span>Scale</span><output></output><input id="scale" type="range" min="5" max="600" value="100" step="1" data-unit="%"></label>
+<label><span>Center X</span><output></output><input id="centerX" type="range" min="-100" max="200" value="50" step="1" data-unit="%"></label>
+<label><span>Center Y</span><output></output><input id="centerY" type="range" min="-100" max="200" value="48" step="1" data-unit="%"></label>
+<label title="Number of filament layers in each wing"><span>Cols · Layers</span><output></output><input id="cols" type="range" min="2" max="100" value="13" step="1" data-unit=""></label>
+<label title="Number of ripples along each filament"><span>Rows · Ripples</span><output></output><input id="rows" type="range" min="1" max="100" value="9" step="1" data-unit=""></label>
+<label><span>Speed</span><output></output><input id="flow" type="range" min="-400" max="600" value="75" step="1" data-unit="%"></label>
+<label title="Start of the X sampling domain"><span>X Min</span><output></output><input id="xMin" type="range" min="-100" max="100" value="-1" step="0.01" data-unit=""></label>
+<label title="End of the X sampling domain"><span>X Max</span><output></output><input id="xMax" type="range" min="-100" max="100" value="1" step="0.01" data-unit=""></label>
+<label title="Start of the Y sampling domain"><span>Y Min</span><output></output><input id="yMin" type="range" min="-100" max="100" value="-1" step="0.01" data-unit=""></label>
+<label title="End of the Y sampling domain"><span>Y Max</span><output></output><input id="yMax" type="range" min="-100" max="100" value="1" step="0.01" data-unit=""></label>
+<label><span>K Divide</span><output></output><input id="kDivide" type="range" min="0.01" max="100" value="1" step="0.01" data-unit=""></label>
+<label><span>K Subtract</span><output></output><input id="kSubtract" type="range" min="-100" max="100" value="0" step="0.01" data-unit=""></label>
+<label><span>Y Wave Divide</span><output></output><input id="yWaveDivide" type="range" min="0.01" max="100" value="1" step="0.01" data-unit=""></label>
+<label><span>Q Add</span><output></output><input id="qAdd" type="range" min="-100" max="100" value="0" step="0.01" data-unit=""></label>
+<label><span>Wave Power</span><output></output><input id="wavePower" type="range" min="-100" max="100" value="1.12" step="0.01" data-unit=""></label>
+<label><span>Glow</span><output></output><input id="glow" type="range" min="0" max="500" value="115" step="1" data-unit="%"></label>
+<label><span>Density</span><output></output><input id="density" type="range" min="0" max="100" value="72" step="1" data-unit="%"></label>
+</div>
+<button id="reset" data-icon="↺" title="Reset controls">Reset</button>
+</section>
+<section id="audioPanel" class="audio-panel sliders" hidden aria-label="Sound sources">
+<button id="shareSound">Share tab / system audio</button>
+<p id="audioHint" hidden>Firefox: choose Stereo Mix or a loopback input for device audio.</p>
+<button id="inputSound">Choose audio input</button>
+<select id="audioInput" aria-label="Audio input" hidden></select>
+<label>Shape response <input id="shapeResponse" type="range" min="0" max="200" value="100" step="1" aria-label="Audio shape response"></label>
+<label>Input level <meter id="audioMeter" min="0" max="1" value="0"></meter></label>
+</section>
+<nav aria-label="Artwork controls">
+<button id="settings" data-icon="☷" title="Controls" aria-controls="panel" aria-expanded="false">Controls</button>
+<button id="variation" data-icon="↝" title="Cycle wing silhouettes">New form</button>
+<button id="pause" data-icon="Ⅱ" title="Pause or play" aria-pressed="false">Pause</button>
+<button id="sound" data-icon="♪" title="Sound response · choose an audio source" aria-controls="audioPanel" aria-expanded="false" aria-pressed="false">Sound response</button>
+<button id="png" data-icon="PNG" title="Export PNG">PNG</button>
+<button id="record" data-icon="●" title="Record video" aria-pressed="false">Record</button>
+<button id="clean" data-icon="×" title="Clean view (H, or tap artwork to return)" aria-label="Clean view">Hide</button>
+</nav>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const canvas = $('field');
+const ctx = canvas.getContext('2d', {alpha:false});
+const status = document.querySelector('.status');
+const tau = Math.PI * 2;
+const settings = {symmetry:1, symmetryCenter:50, innerGlow:0, glowSize:100, scale:100, centerX:50, centerY:48, cols:13, rows:9, flow:75, xMin:-1, xMax:1, yMin:-1, yMax:1, kDivide:1, kSubtract:0, yWaveDivide:1, qAdd:0, wavePower:1.12, glow:115, density:72};
+let w, h, ratio, radius;
+let time = 0, previous = 0, paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let seed = 117, strands = [];
+// Shape coordinates change independently of the blue filament renderer.
+const silhouettes = [
+  [1, 1, 0, 0, 0],
+  [1.22, .91, -.37, .20, -.20],
+  [.84, 1.04, .36, -.27, .13],
+  [1.06, .95, -.11, -.33, -.32]
+];
+let silhouetteIndex=0;
+const silhouette=[...silhouettes[0]];
+const pointer = {x:0,y:0,targetX:0,targetY:0,power:0,targetPower:0};
+let soundLevel=0;
+let centerBlue;
+const geometryKeys=['xMin','xMax','yMin','yMax','kDivide','kSubtract','yWaveDivide','qAdd','wavePower'];
+const geometryAudio={};
+const geometryInputs=Object.fromEntries(geometryKeys.map(id=>[id,$(id)]));
+const shapeResponse=$('shapeResponse');
+let bassMotion=0, midMotion=0, highMotion=0;
+function applyAudioGeometry(bass,mid,high,amount) {
+  const offsets={
+    xMin:-12*bass, xMax:18*bass,
+    yMin:-14*mid, yMax:19*mid,
+    kDivide:settings.kDivide*2.8*bass, kSubtract:3.5*mid-2*high,
+    yWaveDivide:settings.yWaveDivide*3*high, qAdd:36*bass-23*mid,
+    wavePower:9*high+3*mid
+  };
+  for(const id of geometryKeys) {
+    const input=geometryInputs[id];
+    const value=Math.max(Number(input.min),Math.min(Number(input.max),settings[id]+offsets[id]*amount));
+    geometryAudio[id]=value;
+    input.previousElementSibling.value=String(Number(value.toFixed(2)));
+  }
+}
+function resize() {
+  w = innerWidth; h = innerHeight;
+  ratio = Math.min(devicePixelRatio || 1, 2, 2400 / Math.max(w,h));
+  canvas.width = Math.round(w * ratio);
+  canvas.height = Math.round(h * ratio);
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  radius = Math.min(w * .50, h * .445);
+}
+// Each row traces a different cross-section of the same folded surface.
+const lobes = [
+  {width:1, weight:1, core:false, spine:[
+    [.008,.19], [.52,.22], [1.23,-.43], [.78,-.76],
+    [.51,-1.00], [.11,-.85], [.015,-.59]
+  ], fold:[
+    [.032,.21], [.28,.16], [.30,-.29], [.55,-.44],
+    [.69,-.65], [.29,-.72], [.020,-.59]
+  ]},
+  {width:.8, weight:.64, core:false, spine:[
+    [.014,.19], [.22,.49], [.75,.34], [.52,.11],
+    [.37,-.045], [.15,-.04], [.014,.19]
+  ], fold:[
+    [.016,.20], [.24,.29], [.52,.23], [.43,.13],
+    [.35,.10], [.12,.05], [.016,.20]
+  ]},
+  {width:.88, weight:.78, core:false, spine:[
+    [.018,.20], [.13,.49], [.55,.38], [.56,.79],
+    [.54,1.01], [.16,.77], [.018,.20]
+  ], fold:[
+    [.024,.21], [.20,.41], [.31,.47], [.37,.63],
+    [.33,.68], [.11,.49], [.024,.21]
+  ]},
+  {width:.45, weight:.57, core:true, spine:[
+    [.006,.165], [.13,-.02], [.26,.02], [.13,.15],
+    [.095,.18], [.055,.195], [.006,.165]
+  ], fold:[
+    [.006,.165], [.074,.04], [.16,.09], [.09,.15],
+    [.065,.17], [.032,.18], [.006,.165]
+  ]}
+];
+function createForm() {
+  let state = seed >>> 0;
+  function random() {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 4294967296;
+  }
+  const count=Math.max(3,Math.round(settings.cols*1.29));
+  strands = Array.from({length:count},(_,index)=>lobes.map((lobe,j)=>{
+    const depth=index/(count-1);
+    return {lobe, depth, phase:random()*tau, speed:.16+j*.023,
+      width:.94+random()*.12, bend:(random()-.5)*.075,
+      brightness:lobe.weight*(index%5===0 ? .86 : .17+random()*.27)};
+  })).flat();
+}
+function cubic(a,b,c,d,u) {
+  const v=1-u;
+  return v*v*v*a+3*v*v*u*b+3*v*u*u*c+u*u*u*d;
+}
+// Use a bounded displacement from the reference field so the default
+// filament silhouette and the renderer are independent of the sampling domain.
+function shapeField(x,y,t,divide,subtract,yDivide,offset,power) {
+  const k=x/divide-subtract;
+  const e=Math.cos(k)+Math.sin(y/yDivide)+Math.cos(k/2);
+  const d=Math.abs(e);
+  const q=x/4+offset+d*k*power*(1+Math.cos(3*d-2*t+y/29));
+  const c=y*e/99-t/18+d/7;
+  return [q*Math.cos(c),(q/2+30*Math.cos(c/3))*Math.sin(c)+80*e];
+}
+function foldedCurve(f,t) {
+  const {lobe,depth}=f;
+  const geometry=soundAnalyser ? geometryAudio : settings;
+  const sheet=Math.pow(depth,1.12);
+  const fold=sheet*(.88+.09*Math.sin(t*.56));
+  const breathe=1+.095*Math.sin(t*.7+depth*.9);
+  const path=lobe.spine.map(([x,y],i)=>{
+    const [fx,fy]=lobe.fold[i];
+    return [(x+(fx-x)*fold)*f.width*breathe,
+      y+(fy-y)*fold+f.bend*Math.sin(i*Math.PI/6)];
+  });
+  const [spread,height,flare,sweep,pinch]=silhouette;
+  const rowFrequency=20*Math.asinh((settings.rows-9)/12);
+  const divide=8*Math.exp(.45*Math.asinh(geometry.kDivide-1));
+  const subtract=13+2*Math.asinh(geometry.kSubtract/4);
+  const yDivide=24*Math.exp(.42*Math.asinh(geometry.yWaveDivide-1));
+  const offset=90+geometry.qAdd;
+  const power=1+Math.asinh((geometry.wavePower-1.12)/6);
+  const fieldActive=geometry.xMin!==-1 || geometry.xMax!==1 ||
+    geometry.yMin!==-1 || geometry.yMax!==1 || geometry.kDivide!==1 ||
+    geometry.kSubtract!==0 || geometry.yWaveDivide!==1 ||
+    geometry.qAdd!==0 || geometry.wavePower!==1.12;
+  const y0=200+14*(geometry.yMin+1);
+  const y1=200+14*(geometry.yMax-1);
+  const sampleY=400*depth+y0+(y1-y0)*depth-200;
+  return u=>{
+    const i=u<.5 ? 0 : 3;
+    const v=u*2-(i ? 1 : 0);
+    const a=path[i], b=path[i+1], c=path[i+2], d=path[i+3];
+    const x=cubic(a[0],b[0],c[0],d[0],v);
+    const y=cubic(a[1],b[1],c[1],d[1],v);
+    const wave=Math.sin(u*8+t*.78+depth*3);
+    const upper=Math.max(0,-y);
+    const lower=Math.max(0,y);
+    const wingWidth=spread+flare*upper+pinch*lower;
+    const envelope=Math.sin(Math.PI*u);
+    const pleat=(Math.sin(u*rowFrequency+depth*2)-Math.sin(depth*2))*envelope;
+    let warpX=0, warpY=0;
+    if(fieldActive) {
+      const sampleX=400*u+14*((geometry.xMin+1)*(1-u)+(geometry.xMax-1)*u);
+      const [fx,fy]=shapeField(sampleX,sampleY,t,divide,subtract,yDivide,offset,power);
+      const [bx,by]=shapeField(400*u,400*depth,t,8,13,24,90,1);
+      warpX=.53*Math.tanh((fx-bx)/175)*envelope;
+      warpY=.62*Math.tanh((fy-by)/180)*envelope;
+    }
+    return [Math.max(.001,x*(1+.065*wave+.15*pleat))*wingWidth+warpX,
+      y*height+sweep*x*x+x*(.052*wave+.115*pleat)+warpY
+        +lobe.width*.085*Math.sin(t*.61+depth*2)*envelope];
+  };
+}
+function deflect(x,y,control,size,multiplier=1) {
+  const dx=x-control.x, dy=y-control.y;
+  const influence = multiplier * control.power * Math.exp(-(dx*dx+dy*dy)/(size*size*.20));
+  return [x+dy*influence*.23,y-dx*influence*.23];
+}
+const maxSteps=224;
+const points = new Float32Array((maxSteps+1)*2);
+const smoothedPoints=new Float32Array(points.length);
+let smoothingWeights=[];
+function softenPath(steps) {
+  // Filter the sampled stroke in render space, preserving its two endpoints.
+  const radius=Math.max(2,Math.round(steps*.045));
+  if(smoothingWeights.length!==radius+1) {
+    const sigma=radius*.52;
+    smoothingWeights=Array.from({length:radius+1},(_,i)=>Math.exp(-.5*(i/sigma)**2));
+  }
+  for(let i=0;i<=steps;i++) {
+    const span=Math.min(radius,i,steps-i);
+    let x=0,y=0,total=0;
+    for(let j=-span;j<=span;j++) {
+      const weight=smoothingWeights[Math.abs(j)];
+      const index=(i+j)*2;
+      x+=points[index]*weight;
+      y+=points[index+1]*weight;
+      total+=weight;
+    }
+    smoothedPoints[i*2]=x/total;
+    smoothedPoints[i*2+1]=y/total;
+  }
+}
+function buildPath(start,end) {
+  ctx.beginPath();
+  ctx.moveTo(smoothedPoints[start*2],smoothedPoints[start*2+1]);
+  for(let i=start;i<end;i++) {
+    const a=Math.max(start,i-1)*2;
+    const b=i*2;
+    const c=(i+1)*2;
+    const d=Math.min(end,i+2)*2;
+    ctx.bezierCurveTo(
+      smoothedPoints[b]+(smoothedPoints[c]-smoothedPoints[a])*.14,
+      smoothedPoints[b+1]+(smoothedPoints[c+1]-smoothedPoints[a+1])*.14,
+      smoothedPoints[c]-(smoothedPoints[d]-smoothedPoints[b])*.14,
+      smoothedPoints[c+1]-(smoothedPoints[d+1]-smoothedPoints[b+1])*.14,
+      smoothedPoints[c],smoothedPoints[c+1]);
+  }
+}
+function stroke(width,red,green,blue,opacity) {
+  ctx.lineWidth=width;
+  ctx.strokeStyle='rgba('+red+','+green+','+blue+','+Math.min(1,opacity)+')';
+  ctx.stroke();
+}
+function drawCurve(size, shape, intensity, pulse, ring, centerX, side, activePointer, steps) {
+  for(let j=0;j<=steps;j++) {
+    let [x,y]=shape(j/steps);
+    if(settings.symmetry) x=centerX+Math.abs(x-centerX);
+    if(activePointer.power>.005) [x,y]=deflect(x,y,activePointer,size);
+    if(settings.symmetry) x=centerX+side*Math.abs(x-centerX);
+    points[j*2]=x; points[j*2+1]=y;
+  }
+  softenPath(steps);
+  const glow=Math.log1p(settings.glow/100*(1+soundLevel*1.35))/.77;
+  const glowSize=.55+.45*settings.glowSize/100;
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  buildPath(0,steps);
+  stroke(34*glowSize,112,56,33,intensity*.006*glow);
+  stroke(22*glowSize,142,62,56,intensity*.014*glow);
+  stroke(13*glowSize,178,58,104,intensity*.025*glow);
+  stroke(7*glowSize,208,65,129,intensity*.042*glow);
+  stroke(3*glowSize,231,82,151,intensity*.083*glow);
+  stroke(.72,255,119,178,intensity*.33);
+  ctx.strokeStyle=centerBlue;
+  ctx.lineWidth=12*glowSize;
+  ctx.globalAlpha=Math.min(1,intensity*.18*glow);
+  ctx.stroke();
+  ctx.lineWidth=1.25;
+  ctx.globalAlpha=intensity*.78;
+  ctx.stroke();
+  ctx.globalAlpha=1;
+  if(ring && settings.innerGlow>0) {
+    stroke(11*glowSize,235,85,16,intensity*.22*settings.innerGlow/100);
+    stroke(2,255,152,67,intensity*.39*settings.innerGlow/100);
+  }
+  const start=Math.max(0,Math.round((pulse-.105)*steps));
+  const end=Math.min(steps,Math.round((pulse+.105)*steps));
+  if(end<=start || intensity<.17) return;
+  const gradient=ctx.createLinearGradient(smoothedPoints[start*2],smoothedPoints[start*2+1],smoothedPoints[end*2],smoothedPoints[end*2+1]);
+  gradient.addColorStop(0,'#f4a32e00');
+  gradient.addColorStop(.24,'#ce751f4a');
+  gradient.addColorStop(.46,'#ffc35bd9');
+  gradient.addColorStop(.58,'#fff0b1f0');
+  gradient.addColorStop(.76,'#eaa13f7a');
+  gradient.addColorStop(1,'#f4a32e00');
+  buildPath(start,end);
+  ctx.strokeStyle=gradient;
+  for(const [width,alpha] of [[38*glowSize,.010*glow],[25*glowSize,.020*glow],[15*glowSize,.042*glow],[8*glowSize,.075*glow],[3*glowSize,.14*glow],[1,.73]]) {
+    ctx.lineWidth=width; ctx.globalAlpha=Math.min(1,alpha*intensity); ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+function render(now) {
+  const delta=Math.min(.05,(now-previous)/1000);
+  previous=now;
+  if(!paused) time+=delta*settings.flow/100;
+  updateSoundLevel(delta);
+  pointer.x+=(pointer.targetX-pointer.x)*.15;
+  pointer.y+=(pointer.targetY-pointer.y)*.15;
+  pointer.power+=(pointer.targetPower-pointer.power)*.12;
+  const target=silhouettes[silhouetteIndex];
+  const blend=1-Math.exp(-delta*5);
+  for(let i=0;i<silhouette.length;i++) silhouette[i]+=(target[i]-silhouette[i])*blend;
+  const s=radius*settings.scale/100*(1+soundLevel*.055), t=time;
+  const centerX=w*settings.centerX/100, centerY=h*settings.centerY/100;
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle='#050608'; ctx.fillRect(0,0,w,h);
+  const halo=ctx.createRadialGradient(centerX,centerY,s*.105,centerX,centerY,s*.9);
+  halo.addColorStop(0,'#050608'); halo.addColorStop(.24,'#160c17');
+  halo.addColorStop(.52,'#100a11'); halo.addColorStop(1,'#050608');
+  ctx.fillStyle=halo; ctx.fillRect(0,0,w,h);
+  ctx.globalCompositeOperation='lighter';
+  const axis=settings.symmetry ? centerX+w*(settings.symmetryCenter-50)/100 : centerX;
+  const waistY=centerY+s*.19;
+  const blueMist=ctx.createRadialGradient(axis,waistY,0,axis,waistY,s*.42);
+  blueMist.addColorStop(0,'rgba(23,123,243,.22)');
+  blueMist.addColorStop(.32,'rgba(17,76,184,.10)');
+  blueMist.addColorStop(1,'rgba(17,76,184,0)');
+  ctx.fillStyle=blueMist;
+  ctx.fillRect(axis-s*.42,waistY-s*.42,s*.84,s*.84);
+  centerBlue=ctx.createRadialGradient(axis,waistY,0,axis,waistY,s*.36);
+  centerBlue.addColorStop(0,'#56caff');
+  centerBlue.addColorStop(.28,'#2185ffad');
+  centerBlue.addColorStop(1,'#1759ed00');
+  drawFilaments(s,t,axis,centerY);
+  ctx.globalCompositeOperation='source-over';
+  requestAnimationFrame(render);
+}
+function drawFilaments(s,t,centerX,centerY) {
+  const sides=settings.symmetry ? [1,-1] : [1];
+  const activePointer=settings.symmetry && pointer.x<centerX ? {...pointer,x:2*centerX-pointer.x} : pointer;
+  const density=settings.density/100;
+  if(density===0) return;
+  const steps=Math.min(maxSteps,128+Math.ceil(Math.abs(settings.rows-9)*1.1+Math.abs(settings.xMin+1)*.45+Math.abs(settings.xMax-1)*.45));
+  for(let i=0;i<strands.length;i++) {
+    const f=strands[i];
+    if(i%20>=4 && ((i*37)%101)/101>=density) continue;
+    const phase=t*f.speed+f.phase/tau;
+    const pulse=phase-Math.floor(phase/1.22)*1.22-.11;
+    for(const side of sides) {
+      const curve=foldedCurve(f,t);
+      drawCurve(s,u=>{
+        const [x,y]=curve(u);
+        return [centerX+s*x,centerY+s*y];
+      },f.brightness,pulse,f.lobe.core,centerX,side,activePointer,steps);
+    }
+  }
+}
+function move(event) {
+  pointer.targetX=event.clientX; pointer.targetY=event.clientY;
+  pointer.targetPower=event.buttons || event.pointerType==='touch' ? 1 : .48;
+}
+canvas.addEventListener('pointermove',move);
+canvas.addEventListener('pointerdown',event=>{canvas.setPointerCapture(event.pointerId);move(event);});
+canvas.addEventListener('pointerup',event=>{if(event.pointerType==='touch')pointer.targetPower=0;else move(event);});
+for(const name of ['pointerleave','pointercancel']) canvas.addEventListener(name,()=>{pointer.targetPower=0;});
+canvas.addEventListener('click',()=>{document.body.classList.remove('clean');});
+$('clean').onclick=()=>{document.body.classList.add('clean'); canvas.focus();};
+addEventListener('keydown',event=>{
+  if(event.key==='Escape') document.body.classList.remove('clean');
+  if(event.key.toLowerCase()==='h' && !event.repeat) document.body.classList.toggle('clean');
+});
+$('settings').onclick=()=>{
+  const panel=$('panel'); panel.hidden=!panel.hidden;
+  $('settings').setAttribute('aria-expanded',String(!panel.hidden));
+};
+function updatePause() {
+  $('pause').textContent=paused?'Play':'Pause';
+  $('pause').setAttribute('aria-pressed',String(paused));
+}
+$('pause').onclick=()=>{paused=!paused;updatePause();};
+$('variation').onclick=()=>{silhouetteIndex=(silhouetteIndex+1)%silhouettes.length;};
+function updateSetting(id) {
+  const input=$(id);
+  settings[id]=Number(input.value);
+  input.previousElementSibling.value=id==='symmetry'
+    ? (settings[id] ? 'On' : 'Off')
+    : settings[id]+input.dataset.unit;
+}
+for(const id of Object.keys(settings)) {
+  $(id).oninput=()=>{
+    updateSetting(id);
+    if(id==='cols') createForm();
+  };
+  updateSetting(id);
+}
+$('reset').onclick=()=>{
+  for(const id of Object.keys(settings)) {
+    const input=$(id);
+    input.value=input.defaultValue;
+    updateSetting(id);
+  }
+  silhouetteIndex=0;
+  silhouette.splice(0,silhouette.length,...silhouettes[0]);
+  time=0;seed=117;createForm();
+};
+function download(blob,name) {
+  if(!blob){status.textContent='Export failed. Try again.';return;}
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');link.href=url;link.download=name;link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+$('png').onclick=()=>canvas.toBlob(blob=>download(blob,'blue-current.png'));
+let recorder, recordingTimeout;
+$('record').onclick=()=>{
+  if(recorder?.state==='recording'){recorder.stop();return;}
+  if(!canvas.captureStream || !window.MediaRecorder){status.textContent='Video recording is unavailable in this browser.';return;}
+  const mimeType=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp8','video/webm'].find(type=>MediaRecorder.isTypeSupported(type));
+  const stream=canvas.captureStream(30);
+  const chunks=[];
+  const finish=()=>{
+    clearTimeout(recordingTimeout);
+    stream.getTracks().forEach(track=>track.stop());
+    $('record').textContent='Record';$('record').setAttribute('aria-pressed','false');
+  };
+  try {
+    recorder=new MediaRecorder(stream,{...(mimeType?{mimeType}:{}),videoBitsPerSecond:8000000});
+    recorder.ondataavailable=event=>{if(event.data.size)chunks.push(event.data);};
+    recorder.onerror=()=>{finish();status.textContent='Recording failed. Try again.';};
+    recorder.onstop=()=>{
+      finish();
+      if(!chunks.length)return;
+      const type=recorder.mimeType || chunks[0].type;
+      download(new Blob(chunks,{type}),'blue-current.'+(type.includes('mp4')?'mp4':'webm'));
+      status.textContent='';
+    };
+    recorder.start();
+    $('record').textContent='Stop';$('record').setAttribute('aria-pressed','true');
+    status.textContent='Recording up to 15 seconds';
+    recordingTimeout=setTimeout(()=>{if(recorder.state==='recording')recorder.stop();},15000);
+  } catch(error) {finish();status.textContent='Video recording could not start.';}
+};
+let sharedAudio, soundContext, soundAnalyser, soundBins, soundWave;
+let audioBusy=false;
+const soundButton=$('sound');
+const audioPanel=$('audioPanel');
+const audioInput=$('audioInput');
+const audioMeter=$('audioMeter');
+if(/Firefox\//.test(navigator.userAgent)) {
+  $('shareSound').style.display='none';
+  $('audioHint').hidden=false;
+}
+function showAudioPanel(show) {
+  audioPanel.hidden=!show;
+  soundButton.setAttribute('aria-expanded',String(show));
+}
+function stopSound() {
+  sharedAudio?.getTracks().forEach(track=>track.stop());
+  sharedAudio=null;
+  soundAnalyser=null;
+  soundBins=null;
+  soundWave=null;
+  soundLevel=0;
+  bassMotion=midMotion=highMotion=0;
+  applyAudioGeometry(0,0,0,0);
+  audioMeter.value=0;
+  if(soundContext) void soundContext.close().catch(()=>{});
+  soundContext=null;
+  soundButton.setAttribute('aria-pressed','false');
+}
+function updateSoundLevel(delta) {
+  if(!soundAnalyser) return;
+  soundAnalyser.getByteTimeDomainData(soundWave);
+  let energy=0;
+  for(const sample of soundWave) energy+=((sample-128)/128)**2;
+  const rms=Math.sqrt(energy/soundWave.length);
+  soundAnalyser.getByteFrequencyData(soundBins);
+  const binHz=soundContext.sampleRate/soundAnalyser.fftSize;
+  function band(low,high) {
+    const start=Math.max(1,Math.ceil(low/binHz));
+    const end=Math.min(soundBins.length,Math.ceil(high/binHz));
+    let peak=0;
+    for(let i=start;i<end;i++) peak=Math.max(peak,soundBins[i]/255);
+    return Math.max(0,(peak-.19)/.81);
+  }
+  const level=Math.min(1,rms*5);
+  const gate=Math.min(1,rms*28);
+  const bass=band(30,180)*gate;
+  const mid=band(180,1800)*gate;
+  const high=band(1800,7000)*gate;
+  const mix=1-Math.exp(-delta*14);
+  bassMotion+=(bass-bassMotion)*mix;
+  midMotion+=(mid-midMotion)*mix;
+  highMotion+=(high-highMotion)*mix;
+  const amount=Number(shapeResponse.value)/100;
+  applyAudioGeometry(bassMotion,midMotion,highMotion,amount);
+  const target=Math.min(1,level*.66+bass*.55);
+  soundLevel+=(target-soundLevel)*(1-Math.exp(-delta*(target>soundLevel ? 26 : 7)));
+  audioMeter.value=level;
+}
+async function startSound(mode,deviceId) {
+  if(audioBusy) return;
+  const media=navigator.mediaDevices;
+  if(!window.AudioContext || !(mode==='share' ? media?.getDisplayMedia : media?.getUserMedia)) {
+    status.textContent=mode==='share' ? 'Screen audio sharing unavailable. Choose an audio input.' : 'Audio inputs unavailable here.';
+    return;
+  }
+  audioBusy=true;
+  stopSound();
+  for(const id of ['shareSound','inputSound','audioInput']) $(id).disabled=true;
+  status.textContent=mode==='share' ? 'Choose the music tab or screen and enable Share audio.' : 'Allow access to the audio input.';
+  try {
+    soundContext=new AudioContext();
+    const resumed=soundContext.resume().catch(()=>{});
+    if(mode==='share') {
+      sharedAudio=await media.getDisplayMedia({video:true,audio:true,systemAudio:'include'});
+    } else {
+      const audio={echoCancellation:false,noiseSuppression:false,autoGainControl:false};
+      if(deviceId) audio.deviceId={exact:deviceId};
+      sharedAudio=await media.getUserMedia({audio});
+    }
+    await resumed;
+    const stream=sharedAudio;
+    const audio=stream.getAudioTracks()[0];
+    if(!audio) {
+      stopSound();
+      status.textContent='No audio track. Try Share audio or choose Stereo Mix under audio inputs.';
+      return;
+    }
+    soundAnalyser=soundContext.createAnalyser();
+    soundAnalyser.fftSize=2048;
+    soundAnalyser.smoothingTimeConstant=.58;
+    soundBins=new Uint8Array(soundAnalyser.frequencyBinCount);
+    soundWave=new Uint8Array(soundAnalyser.fftSize);
+    soundContext.createMediaStreamSource(new MediaStream([audio])).connect(soundAnalyser);
+    for(const track of stream.getTracks()) track.addEventListener('ended',()=>{
+      if(sharedAudio===stream) {stopSound();status.textContent='Sound source ended.';}
+    },{once:true});
+    soundButton.setAttribute('aria-pressed','true');
+    status.textContent='Listening · '+(audio.label || (mode==='share' ? 'shared audio' : 'audio input'));
+    if(mode==='input') {
+      const devices=await media.enumerateDevices();
+      const inputs=devices.filter(device=>device.kind==='audioinput');
+      audioInput.replaceChildren(...inputs.map((device,i)=>new Option(device.label || 'Audio input '+(i+1),device.deviceId)));
+      const activeId=audio.getSettings().deviceId;
+      if(activeId && inputs.some(device=>device.deviceId===activeId)) audioInput.value=activeId;
+      audioInput.hidden=inputs.length===0;
+    }
+  } catch(error) {
+    stopSound();
+    status.textContent=error.name==='NotAllowedError' ? 'Audio access was canceled or blocked.' : 'Audio could not start. Try another source.';
+  } finally {
+    audioBusy=false;
+    for(const id of ['shareSound','inputSound','audioInput']) $(id).disabled=false;
+  }
+}
+soundButton.onclick=()=>{
+  if(audioBusy) return;
+  if(sharedAudio || !audioPanel.hidden) {
+    stopSound(); showAudioPanel(false); status.textContent='';
+  } else {
+    showAudioPanel(true);
+  }
+};
+$('shareSound').onclick=()=>startSound('share');
+$('inputSound').onclick=()=>startSound('input',audioInput.value);
+audioInput.onchange=()=>startSound('input',audioInput.value);
+addEventListener('pagehide',stopSound);
+addEventListener('resize',resize);
+resize();createForm();updatePause();requestAnimationFrame(render);
+</script>
+</body>
+</html>
