@@ -6,7 +6,7 @@ An interactive, browser-based generative artwork by **Denisa Durica**. Houdini-i
 
 ## Play the app
 
-👉 **[Open Synthetic Dream 2.0](https:/De-Dur.github.io/Synthetic-Dream-2.0/)**
+👉 **[Open Synthetic Dream 2.0](https://De-Dur.github.io/Synthetic-Dream-2.0/)**
 
 ## What this project does
 
