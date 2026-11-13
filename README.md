@@ -1,4 +1,4 @@
-# Synthetic Dream N° 2.0
+# Synthetic Dream 2.0
 
 **pink current blue gold**
 
@@ -6,7 +6,7 @@ An interactive, browser-based generative artwork by **Denisa Durica**. Houdini-i
 
 ## Play the app
 
-👉 **[Open Synthetic Dream N° 2.0](https:/De-Dur.github.io/Synthetic-Dream-N-2.0/)**
+👉 **[Open Synthetic Dream N° 2.0](https:/De-Dur.github.io/Synthetic-Dream-2.0/)**
 
 Download `Synthetic_Dream_Blue_Current_Geometry.html` and open it in a modern browser. For GitHub Pages, publish the HTML as `index.html`.
 
