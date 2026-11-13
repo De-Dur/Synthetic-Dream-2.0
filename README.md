@@ -8,8 +8,6 @@ An interactive, browser-based generative artwork by **Denisa Durica**. Houdini-i
 
 👉 **[Open Synthetic Dream 2.0](https:/De-Dur.github.io/Synthetic-Dream-2.0/)**
 
-Download `Synthetic_Dream_Blue_Current_Geometry.html` and open it in a modern browser. For GitHub Pages, publish the HTML as `index.html`.
-
 ## What this project does
 
 Synthetic Dream draws layered, wing-like forms on an HTML canvas. Time animates the curves, the sliders change how they fold and ripple, and moving the pointer or dragging across the canvas bends the filaments. You can work with one wing, mirror it around a movable axis, or cycle through four silhouettes.
